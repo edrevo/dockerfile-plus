@@ -1,0 +1,27 @@
+[package]
+name = "buildkit-llb"
+version = "0.2.0"
+authors = ["Denys Zariaiev <denys.zariaiev@gmail.com>"]
+edition = "2018"
+
+description = "Idiomatic high-level API to create BuildKit LLB graphs"
+documentation = "https://docs.rs/buildkit-llb"
+repository = "https://github.com/denzp/rust-buildkit"
+readme = "README.md"
+keywords = ["buildkit", "docker", "llb"]
+categories = ["development-tools::build-utils", "api-bindings"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+either = "1.6"
+failure = "0.1"
+lazy_static = "1"
+log = "0.4"
+prost = "0.6"
+regex = "1"
+serde_json = "1.0"
+sha2 = "0.8"
+
+[dependencies.buildkit-proto]
+version = "0.2"
+path = "../buildkit-proto"

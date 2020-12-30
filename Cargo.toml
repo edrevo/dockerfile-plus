@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "buildkit-proto",
+    "buildkit-llb",
+    "dockerfile-plus",
+]

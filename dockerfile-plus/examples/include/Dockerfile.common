@@ -1,0 +1,5 @@
+FROM alpine
+
+ENV RUST_LOG=debug
+
+ENTRYPOINT ["/usr/local/bin/noop"]
