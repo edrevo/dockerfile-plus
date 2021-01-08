@@ -41,7 +41,7 @@ where
     Ok(response)
 }
 
-async fn solve<'a>(client: &mut LlbBridgeClient<Channel>, graph: Terminal<'a>) -> Result<String> {
+async fn solve(client: &mut LlbBridgeClient<Channel>, graph: Terminal<'_>) -> Result<String> {
     let solve_request = SolveRequest {
         definition: Some(graph.into_definition()),
         exporter_attr: vec![],
@@ -62,13 +62,7 @@ async fn solve<'a>(client: &mut LlbBridgeClient<Channel>, graph: Terminal<'a>) -
     }
 }
 
-async fn run() -> Result<()> {
-    let channel = {
-        Endpoint::from_static("http://[::]:50051")
-            .connect_with_connector(service_fn(stdio::stdio_connector))
-            .await?
-    };
-    let mut client = LlbBridgeClient::new(channel);
+async fn run(mut client: LlbBridgeClient<Channel>) -> Result<ReturnRequest> {
     let o: DockerfileOptions = options::from_env(std::env::vars())?;
     let dockerfile_path = o
         .filename
@@ -80,24 +74,28 @@ async fn run() -> Result<()> {
     let dockerfile_contents =
         String::from_utf8(read_file(&mut client, &dockerfile_layer, dockerfile_path, None).await?)?;
     let dockerfile_frontend = DockerfileFrontend::new(client.clone(), dockerfile_path);
-    let result = dockerfile_trap(client.clone(), dockerfile_frontend, dockerfile_contents)
-        .await
-        .unwrap_or_else(|e| ReturnRequest {
-            result: None,
-            error: Some(Status {
-                code: 128,
-                message: e.to_string(),
-                details: vec![],
-            }),
-        });
-    client.r#return(result).await?;
-    Ok(())
+    dockerfile_trap(client.clone(), dockerfile_frontend, dockerfile_contents).await
 }
 
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    run().await.unwrap();
+    let channel = {
+        Endpoint::from_static("http://[::]:50051")
+            .connect_with_connector(service_fn(stdio::stdio_connector))
+            .await
+            .unwrap()
+    };
+    let mut client = LlbBridgeClient::new(channel);
+    let result = run(client.clone()).await.unwrap_or_else(|e| ReturnRequest {
+        result: None,
+        error: Some(Status {
+            code: 128,
+            message: e.to_string(),
+            details: vec![],
+        }),
+    });
+    client.r#return(result).await.unwrap();
 }
 
 #[derive(Debug, Deserialize)]
