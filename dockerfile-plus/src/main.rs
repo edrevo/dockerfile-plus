@@ -104,6 +104,7 @@ struct DockerfileOptions {
 }
 
 const INCLUDE_COMMAND: &str = "INCLUDE+";
+const ENVFILE_COMMAND: &str = "ENVFILE+";
 
 async fn dockerfile_trap(
     mut client: LlbBridgeClient<Channel>,
@@ -114,11 +115,19 @@ async fn dockerfile_trap(
     let context_source = Source::local("context");
     let context_layer = solve(&mut client, Terminal::with(context_source.output())).await?;
     for line in dockerfile_contents.lines() {
-        if let Some(file_path) = line.trim().strip_prefix(INCLUDE_COMMAND) {
+        let trimmed_line = line.trim();
+        if let Some(file_path) = trimmed_line.strip_prefix(INCLUDE_COMMAND) {
             let bytes = read_file(&mut client, &context_layer, file_path.trim_start().to_string(), None)
                 .await
                 .with_context(|| format!("Could not read file \"{}\". Remember that the file path is relative to the build context, not the Dockerfile path.", file_path))?;
             result.push(std::str::from_utf8(&bytes)?.to_string());
+        } else if let Some(file_path) = trimmed_line.strip_prefix(ENVFILE_COMMAND) {
+            let bytes = read_file(&mut client, &context_layer, file_path.trim_start().to_string(), None)
+                .await
+                .with_context(|| format!("Could not read file \"{}\". Remember that the file path is relative to the build context, not the Dockerfile path.", file_path))?;
+            for env_line in std::str::from_utf8(&bytes)?.lines() {
+                result.push(format!("ENV {}", env_line));
+            }
         } else {
             result.push(line.to_string());
         }
