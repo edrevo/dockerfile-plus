@@ -12,10 +12,8 @@ Currently, the project adds an `INCLUDE+` Dockerfile directive that allows you t
 
 ## Getting started
 
-First, you need to make sure you are running a compatible version of Docker:
-- if you are using Docker 20.10+, you're all set!
-- if you are using Docker 18.09+, then you need to export the following environment variable: `DOCKER_BUILDKIT=1`
-- if you are using an older version of Docker, you are out of luck. Sorry!
+- First, you need to make sure you are running a compatible version of Docker: you need at least Docker 18.09. If you are using an older version, you are out of luck. Sorry!
+- Export the following environment variables to enable Buildkit: `DOCKER_BUILDKIT=1` and `COMPOSE_DOCKER_CLI_BUILD=1` (this might not be necessary for newer installations of Docker)
 
 Once your Docker is set, you just need to add the following line as your first line in your Dockerfile:
 
