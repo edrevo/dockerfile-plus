@@ -78,3 +78,22 @@ $ cargo build
 ```bash
 $ docker build -f dockerfile-plus/Dockerfile .
 ```
+
+### Creating multi-arch build
+- Enable Experiment in docker config. Add {"experimental": true} to docker daemon.json
+- Setup BuildKit local build container
+```
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+docker buildx create --name multiarch --driver docker-container --use
+docker buildx inspect --bootstrap
+```
+- Run following to start multi-arch build
+```
+docker buildx build \                                                                   
+--platform linux/arm64/v8,linux/amd64 \
+--tag edrevo/dockerfile-plus:latest \
+-f dockerfile-plus/Dockerfile \
+--load ## or --push to push DockerHub \ 
+.
+```
+
