@@ -15,6 +15,8 @@ use serde::Deserialize;
 use tonic::{transport::Channel, transport::Endpoint};
 use tower::service_fn;
 
+use futures::executor;
+
 mod dockerfile_frontend;
 mod options;
 mod stdio;
@@ -113,15 +115,28 @@ async fn dockerfile_trap(
     let mut result: Vec<String> = vec![];
     let context_source = Source::local("context");
     let context_layer = solve(&mut client, Terminal::with(context_source.output())).await?;
-    for line in dockerfile_contents.lines() {
-        if let Some(file_path) = line.trim().strip_prefix(INCLUDE_COMMAND) {
-            let bytes = read_file(&mut client, &context_layer, file_path.trim_start().to_string(), None)
-                .await
+
+    fn replace(
+        l   : &    String,
+        r   : &mut Vec<String>,
+        c   : &mut LlbBridgeClient<Channel>,
+        ctx : &    String
+    )  -> Result<()> {
+        if let Some(file_path) = l.trim().strip_prefix(INCLUDE_COMMAND) {
+            let bytes = executor::block_on(read_file(c, &ctx, file_path.trim_start().to_string(), None))
                 .with_context(|| format!("Could not read file \"{}\". Remember that the file path is relative to the build context, not the Dockerfile path.", file_path))?;
-            result.push(std::str::from_utf8(&bytes)?.to_string());
+            //recurse
+            for l2 in std::str::from_utf8(&bytes)?.to_string().lines() {
+                replace(&l2.to_string(), r, c, &ctx)? ;
+            }
         } else {
-            result.push(line.to_string());
+            r.push(l.to_string());
         }
+        Ok(())
+    }
+
+    for line in dockerfile_contents.lines() {
+        replace(&line.to_string(), &mut result, &mut client, &context_layer)? ;
     }
     let dockerfile_contents = result.join("\n");
     dockerfile_frontend.solve(&dockerfile_contents).await
