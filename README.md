@@ -52,6 +52,9 @@ RUN echo "Hello World"
 ENTRYPOINT [ "mybin" ]
 ```
 
+### INCLUDE_OPTIONAL+
+
+The same as `INCLUDE+`, but the build won't fail if the referenced file does not exist.
 ## Roadmap
 
 The next features in line would be:

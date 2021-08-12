@@ -106,6 +106,7 @@ struct DockerfileOptions {
 }
 
 const INCLUDE_COMMAND: &str = "INCLUDE+";
+const INCLUDE_OPTIONAL_COMMAND: &str = "INCLUDE_OPTIONAL+";
 
 async fn dockerfile_trap(
     mut client: LlbBridgeClient<Channel>,
@@ -127,7 +128,15 @@ async fn dockerfile_trap(
                 .with_context(|| format!("Could not read file \"{}\". Remember that the file path is relative to the build context, not the Dockerfile path.", file_path))?;
             //recurse
             for l2 in std::str::from_utf8(&bytes)?.to_string().lines() {
-                replace(&l2.to_string(), r, c, &ctx)? ;
+                replace(&l2.to_string(), r, c, &ctx)?;
+            }
+        } else if let Some(file_path) = l.trim().strip_prefix(INCLUDE_OPTIONAL_COMMAND) {
+            if let Ok(bytes) =
+                executor::block_on(read_file(c, &ctx, file_path.trim_start().to_string(), None)) {
+                //recurse
+                for l2 in std::str::from_utf8(&bytes)?.to_string().lines() {
+                    replace(&l2.to_string(), r, c, &ctx)?;
+                }
             }
         } else {
             r.push(l.to_string());
@@ -136,7 +145,7 @@ async fn dockerfile_trap(
     }
 
     for line in dockerfile_contents.lines() {
-        replace(&line.to_string(), &mut result, &mut client, &context_layer)? ;
+        replace(&line.to_string(), &mut result, &mut client, &context_layer)?;
     }
     let dockerfile_contents = result.join("\n");
     dockerfile_frontend.solve(&dockerfile_contents).await
