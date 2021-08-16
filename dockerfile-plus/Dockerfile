@@ -4,11 +4,12 @@ FROM rust:latest as builder
 USER root
 
 WORKDIR /rust-src
-COPY . /rust-src
 
 RUN apt update && apt upgrade -y && apt install -y gcc-x86-64-linux-gnu gcc-aarch64-linux-gnu
 
 RUN rustup target add "$(uname -m)-unknown-linux-musl"
+
+COPY . /rust-src
 
 RUN --mount=type=cache,target=/rust-src/target \
     --mount=type=cache,target=/root/.cargo/git \
