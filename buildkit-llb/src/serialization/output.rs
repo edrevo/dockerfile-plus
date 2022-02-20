@@ -23,8 +23,8 @@ impl Node {
 
     pub fn get_digest(bytes: &[u8]) -> String {
         let mut hasher = Sha256::new();
-        hasher.input(&bytes);
+        hasher.update(&bytes);
 
-        format!("sha256:{:x}", hasher.result())
+        format!("sha256:{:x}", hasher.finalize())
     }
 }

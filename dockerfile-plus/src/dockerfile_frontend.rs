@@ -5,7 +5,7 @@ use anyhow::Result;
 use buildkit_proto::moby::buildkit::v1::frontend::{
     self, llb_bridge_client::LlbBridgeClient, llb_bridge_server::LlbBridge,
 };
-use crossbeam::{channel, Sender};
+use crossbeam::{channel, channel::Sender};
 use frontend::{llb_bridge_server::LlbBridgeServer, ReadFileResponse};
 use tokio::sync::RwLock;
 use tonic::{transport::Channel, transport::Server, Request, Response};
@@ -38,7 +38,7 @@ impl DockerfileFrontend {
                 self.dockerfile_name.clone(),
                 dockerfile_contents.as_bytes().to_vec(),
             )))
-            .serve_with_incoming(tokio::stream::once(StdioSocket::try_new_rw(
+            .serve_with_incoming(tokio_stream::once(StdioSocket::try_new_rw(
                 dockerfile_front.stdout.take().unwrap(),
                 dockerfile_front.stdin.take().unwrap(),
             )))
