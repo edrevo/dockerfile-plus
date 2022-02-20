@@ -117,17 +117,17 @@ async fn dockerfile_trap(
     let context_layer = solve(&mut client, Terminal::with(context_source.output())).await?;
 
     fn replace(
-        l   : &    String,
-        r   : &mut Vec<String>,
-        c   : &mut LlbBridgeClient<Channel>,
-        ctx : &    String
-    )  -> Result<()> {
+        l: &String,
+        r: &mut Vec<String>,
+        c: &mut LlbBridgeClient<Channel>,
+        ctx: &String,
+    ) -> Result<()> {
         if let Some(file_path) = l.trim().strip_prefix(INCLUDE_COMMAND) {
             let bytes = executor::block_on(read_file(c, &ctx, file_path.trim_start().to_string(), None))
                 .with_context(|| format!("Could not read file \"{}\". Remember that the file path is relative to the build context, not the Dockerfile path.", file_path))?;
             //recurse
             for l2 in std::str::from_utf8(&bytes)?.to_string().lines() {
-                replace(&l2.to_string(), r, c, &ctx)? ;
+                replace(&l2.to_string(), r, c, &ctx)?;
             }
         } else {
             r.push(l.to_string());
@@ -136,7 +136,7 @@ async fn dockerfile_trap(
     }
 
     for line in dockerfile_contents.lines() {
-        replace(&line.to_string(), &mut result, &mut client, &context_layer)? ;
+        replace(&line.to_string(), &mut result, &mut client, &context_layer)?;
     }
     let dockerfile_contents = result.join("\n");
     dockerfile_frontend.solve(&dockerfile_contents).await
