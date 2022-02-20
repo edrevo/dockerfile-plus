@@ -13,12 +13,12 @@ categories = ["development-tools::build-utils", "api-bindings"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-prost = "0.6"
-prost-types = "0.6"
-tonic = { git = "https://github.com/edrevo/tonic", branch = "unimplemented-content-type" }
+prost = "0.9.0"
+prost-types = "0.9.0"
+tonic = { git = "https://github.com/aminya/tonic", branch = "master" }
 
 [build-dependencies.tonic-build]
-git = "https://github.com/edrevo/tonic"
-branch = "unimplemented-content-type"
-default-features = false
+git = "https://github.com/aminya/tonic"
+branch = "master"
+default-features = true
 features = ["prost", "transport"]

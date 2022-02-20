@@ -13,14 +13,14 @@ categories = ["development-tools::build-utils", "api-bindings"]
 license = "MIT/Apache-2.0"
 
 [dependencies]
-either = "1.6"
-failure = "0.1"
-lazy_static = "1"
-log = "0.4"
-prost = "0.6"
-regex = "1"
-serde_json = "1.0"
-sha2 = "0.8"
+either = "1.6.1"
+failure = "0.1.8"
+lazy_static = "1.4.0"
+log = "0.4.14"
+prost = "0.9.0"
+regex = "1.5.4"
+serde_json = "1.0.79"
+sha2 = "0.10.2"
 
 [dependencies.buildkit-proto]
 version = "0.2"
